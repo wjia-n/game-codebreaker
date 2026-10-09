@@ -1,26 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:wajiha_game_core/wajiha_game_core.dart';
-import 'game_screen.dart';
+import 'package:flutter/services.dart';
+import 'screens/splash_screen.dart';
+import 'services/audio_service.dart';
+import 'services/settings_service.dart';
+import 'theme/vault_design.dart';
+import 'theme/vault_themes.dart';
 
-void main() => runApp(const CodeBreakerApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  final settings = VaultSettings();
+  await settings.load();
+  final audio = VaultAudio();
+  audio.configure(
+    musicOn: settings.musicOn,
+    sfxOn: settings.sfxOn,
+    volume: settings.volume,
+  );
+  runApp(CodeBreakerApp(settings: settings, audio: audio));
+}
 
-class CodeBreakerApp extends StatelessWidget {
-  const CodeBreakerApp({super.key});
+class CodeBreakerApp extends StatefulWidget {
+  final VaultSettings settings;
+  final VaultAudio audio;
+  const CodeBreakerApp({super.key, required this.settings, required this.audio});
+
+  @override
+  State<CodeBreakerApp> createState() => _CodeBreakerAppState();
+}
+
+class _CodeBreakerAppState extends State<CodeBreakerApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.audio.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Pause (not stop) on interruption so music resumes exactly where it
+    // left off; game screens additionally freeze their engines.
+    if (state == AppLifecycleState.paused) {
+      widget.audio.onAppPaused();
+    } else if (state == AppLifecycleState.resumed) {
+      widget.audio.onAppResumed();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GameShell(
-      variant: ShellVariant.midnightNeon,
-      title: 'Code Breaker',
-      tagline: 'Crack the secret color code before you run out of guesses',
-      emoji: '🕵️',
-      slug: 'codebreaker',
-      howToPlay:
-          '• The vault hides a secret 4-peg code from 6 colors.\n• Build a guess, then tap Check. ⚫ = right color in the right spot, ⚪ = right color, wrong spot.\n• 10 guesses to crack it. Think like a detective!\n• Win streaks and best tries are saved.',
-      playerOptions: const [1],
-      supportsBots: false,
-      gameBuilder: (ctx, players, cb) =>
-          CodeBreakerScreen(players: players, callbacks: cb),
+    return ListenableBuilder(
+      listenable: widget.settings,
+      builder: (_, _) => MaterialApp(
+        title: 'Code Breaker',
+        debugShowCheckedModeBanner: false,
+        theme: Vault.theme(VaultThemes.byId(widget.settings.themeId,
+            custom: widget.settings.customTheme)),
+        home: SplashScreen(audio: widget.audio, settings: widget.settings),
+      ),
     );
   }
 }
