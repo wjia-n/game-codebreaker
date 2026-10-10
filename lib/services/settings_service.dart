@@ -78,7 +78,7 @@ class VaultSettings extends ChangeNotifier {
   int streak = 0;
   String? dailyDate;
   bool dailyWon = false;
-  bool isPro = false;
+  bool isPro = true; // everything unlocked — no Pro version
   String customSeed = '';
 
   /// Custom theme colors (ARGB ints). Defaults mirror the Classic Vault.
@@ -166,7 +166,7 @@ class VaultSettings extends ChangeNotifier {
     streak = p.getInt(_kStreak) ?? 0;
     dailyDate = p.getString(_kDailyDate);
     dailyWon = p.getBool(_kDailyWon) ?? false;
-    isPro = p.getBool(_kIsPro) ?? false;
+    isPro = true; // everything unlocked
     customSeed = p.getString(_kSeed) ?? '';
     for (final k in _defaultCustomColors.keys) {
       customColors[k] = p.getInt('$_kCustomPrefix$k') ?? _defaultCustomColors[k]!;
