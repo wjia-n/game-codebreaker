@@ -385,7 +385,7 @@ class VaultThemes {
         'Denim',
         'Plum',
         'Lace',
-        'Bayou'
+        'Marsh'
       ],
     ),
     VaultThemeDef(
