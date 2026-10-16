@@ -3,6 +3,7 @@ import '../services/audio_service.dart';
 import '../services/settings_service.dart';
 import '../theme/vault_design.dart';
 import '../theme/vault_themes.dart';
+import '../transfer/transfer_ui.dart';
 
 /// Settings: music/SFX toggles, volume slider, stats reset.
 class SettingsScreen extends StatefulWidget {
@@ -50,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
               child: Column(
                 children: [
+              TransferSaveTile(gameSlug: 'codebreaker'),
                   VaultCard(
                     theme: t,
                     title: 'Sound',
